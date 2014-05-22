@@ -47,16 +47,29 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container"><pre id="output"></pre>
 
      
     </div><!-- /.container -->
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="../../dist/js/bootstrap.min.js"></script>
+    <script>
+      var socket = new WebSocket("ws://"+location.host+"/printer");
+      socket.onopen = function(evt){
+      };
+      socket.onclose = function(evt){
+      };
+      socket.onmessage = function(evt){
+        console.log(arguments);
+        $('#output').text($('#output').text()+JSON.parse(evt.data).time+'\n');
+
+      };
+      socket.onerror = function(evt){
+      };
+      setInterval(function(){
+        //socket.send(JSON.stringify({time:Math.floor(+new Date()/1000)}));
+      }, 1000);
+    </script>
   </body>
 </html>
