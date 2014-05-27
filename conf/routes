@@ -7,6 +7,6 @@
 # Map static resources from the /public folder to the /assets URL path
 GET     /                    controllers.Assets.at(path="/public", file="index.html")
 
-GET     /printer             controllers.Application.printer
+GET     /printer             controllers.Application.printerCmd
 
 GET     /*file               controllers.Assets.at(path="/public", file)
