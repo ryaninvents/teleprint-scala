@@ -31,6 +31,7 @@ object Application extends Controller {
   def printerCmd = WebSocket.using[JsValue] { request =>
     //Concurrent.broadcast returns (Enumerator, Concurrent.Channel)
     val (out,channel) = Concurrent.broadcast[JsValue]
+    var counter:Int = 0
 
     def processMessage(msg:JsValue):Unit = (msg \ "cmd").asOpt[String] match {
       case Some(cmd) => cmd match {
@@ -41,9 +42,10 @@ object Application extends Controller {
                 case Some(b) => b
                 case None => 115200
               }
-              printerOption = Some(new SerialPrinter(port, baud))
+              val printer = new SerialPrinter(port, baud)
+              printerOption = Some(printer)
               printer.connect()
-              channel push Json.toJson(Map("cmd" -> "connectionStatus", "connected" -> true, "port" -> port, "baud" -> baud))
+              channel push Json.toJson(Map("cmd" -> Json.toJson("connectionStatus"), "connected" -> Json.toJson(true), "port" -> Json.toJson(port), "baud" -> Json.toJson(baud)))
             }
             case None => channel push Json.toJson(Map("error" -> "Must specify a port to connect to"))
           }
@@ -54,11 +56,8 @@ object Application extends Controller {
     }
 
     //log the message to stdout and send response back to client
-    val in = Iteratee.foreach[JsValue] { msg =>
-      println(msg)
-      (msg \ "time").asOpt[Long] match {
-        case Some(t) => if(t % 10 == 0) channel push(msg)
-      } 
+    val in = Iteratee.foreach[JsValue] { event =>
+      processMessage(event)
     }
     (in,out)
   }
